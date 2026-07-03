@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reading Book Tracker</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="js/app.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Reading Dashboard</p>
+          <h1>Reading Book Tracker</h1>
+          <p class="subtle">Track every book, every page, and every streak with calm clarity.</p>
+        </div>
+        <div class="topbar-actions">
+          <button id="themeToggle" class="ghost-btn" type="button">🌙 Dark mode</button>
+          <button id="exportBtn" class="ghost-btn" type="button">Export</button>
+          <label class="ghost-btn import-btn">
+            <input id="importInput" type="file" accept="application/json" hidden />
+            Import
+          </label>
+          <button id="addBookBtn" class="primary-btn" type="button">+ Add Book</button>
+        </div>
+      </header>
+
+      <main class="main-grid">
+        <section class="panel hero-panel">
+          <div>
+            <p class="eyebrow">Today’s focus</p>
+            <h2>Turn reading into a habit you can see.</h2>
+            <p class="hero-copy">
+              Organize your library, monitor progress, and celebrate the streaks that keep you moving.
+            </p>
+          </div>
+          <div class="hero-card">
+            <p class="hero-metric" id="heroMetric">0 books logged</p>
+            <button id="quickBookBtn" class="primary-btn" type="button">Add your next read</button>
+          </div>
+        </section>
+
+        <section id="summaryCards" class="summary-grid"></section>
+
+        <section class="panel controls-panel">
+          <div class="section-heading">
+            <h2>Search & Filter</h2>
+            <button id="clearFiltersBtn" class="ghost-btn" type="button">Reset</button>
+          </div>
+          <form id="filtersForm" class="filters-grid">
+            <label>
+              <span>Search</span>
+              <input id="searchInput" type="text" placeholder="Title or author" />
+            </label>
+            <label>
+              <span>Status</span>
+              <select id="statusFilter">
+                <option value="all">All</option>
+                <option value="want-to-read">Want to Read</option>
+                <option value="currently-reading">Currently Reading</option>
+                <option value="finished">Finished</option>
+                <option value="dropped">Dropped</option>
+              </select>
+            </label>
+            <label>
+              <span>Genre</span>
+              <select id="genreFilter"></select>
+            </label>
+            <label>
+              <span>Favorites</span>
+              <select id="favoriteFilter">
+                <option value="all">All</option>
+                <option value="true">Favorites</option>
+                <option value="false">Regular</option>
+              </select>
+            </label>
+            <label>
+              <span>Sort by</span>
+              <select id="sortFilter">
+                <option value="recent">Recently Added</option>
+                <option value="title">Title A–Z</option>
+                <option value="progress">Progress</option>
+                <option value="started">Date Started</option>
+                <option value="finished">Date Finished</option>
+              </select>
+            </label>
+          </form>
+        </section>
+
+        <section class="panel books-panel">
+          <div class="section-heading">
+            <h2>Books</h2>
+            <p class="subtle">Tap a card to open full details.</p>
+          </div>
+          <div id="booksList" class="books-grid"></div>
+        </section>
+
+        <section class="panel goals-panel">
+          <div class="section-heading">
+            <h2>Reading Goals</h2>
+            <p class="subtle">Set your yearly target and watch it grow.</p>
+          </div>
+          <div id="goalsContent"></div>
+        </section>
+
+        <section class="panel calendar-panel">
+          <div class="section-heading">
+            <h2>Monthly Reading Calendar</h2>
+            <p class="subtle" id="calendarMeta">Select a day to see what you read.</p>
+          </div>
+          <div class="calendar-layout">
+            <div id="calendarGrid" class="calendar-grid"></div>
+            <div id="calendarDetails" class="calendar-details"></div>
+          </div>
+        </section>
+
+        <section class="panel stats-panel">
+          <div class="section-heading">
+            <h2>Statistics</h2>
+            <p class="subtle">A quick snapshot of your reading patterns.</p>
+          </div>
+          <div class="charts-grid">
+            <div class="chart-card"><canvas id="booksByMonthChart"></canvas></div>
+            <div class="chart-card"><canvas id="pagesByMonthChart"></canvas></div>
+            <div class="chart-card"><canvas id="genreChart"></canvas></div>
+            <div class="chart-card"><canvas id="statusChart"></canvas></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="bookModal" class="modal-overlay hidden" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true">
+        <button id="closeBookModal" class="icon-btn" type="button" aria-label="Close details">×</button>
+        <div id="bookModalContent"></div>
+      </div>
+    </div>
+
+    <div id="bookFormModal" class="modal-overlay hidden" aria-hidden="true">
+      <div class="modal-card form-card" role="dialog" aria-modal="true">
+        <button id="closeBookFormModal" class="icon-btn" type="button" aria-label="Close form">×</button>
+        <h3 id="formTitle">Add New Book</h3>
+        <form id="bookForm" class="book-form">
+          <input id="editingBookId" type="hidden" />
+          <div class="form-grid">
+            <label>
+              <span>Title</span>
+              <input id="title" name="title" type="text" required />
+            </label>
+            <label>
+              <span>Author</span>
+              <input id="author" name="author" type="text" required />
+            </label>
+            <label>
+              <span>Genre</span>
+              <input id="genre" name="genre" type="text" placeholder="Fantasy" />
+            </label>
+            <label>
+              <span>Cover URL</span>
+              <input id="coverImage" name="coverImage" type="url" placeholder="https://..." />
+            </label>
+            <label>
+              <span>Total Pages</span>
+              <input id="totalPages" name="totalPages" type="number" min="1" required />
+            </label>
+            <label>
+              <span>Current Page</span>
+              <input id="currentPage" name="currentPage" type="number" min="0" required />
+            </label>
+            <label>
+              <span>Status</span>
+              <select id="status" name="status">
+                <option value="want-to-read">Want to Read</option>
+                <option value="currently-reading">Currently Reading</option>
+                <option value="finished">Finished</option>
+                <option value="dropped">Dropped</option>
+              </select>
+            </label>
+            <label>
+              <span>Date Started</span>
+              <input id="dateStarted" name="dateStarted" type="date" />
+            </label>
+            <label>
+              <span>Date Finished</span>
+              <input id="dateFinished" name="dateFinished" type="date" />
+            </label>
+          </div>
+          <label class="checkbox-row">
+            <input id="favorite" name="favorite" type="checkbox" />
+            <span>Mark as favorite</span>
+          </label>
+          <label>
+            <span>Notes</span>
+            <textarea id="notes" name="notes" rows="4" placeholder="Personal summary, favorite quote, reflections..."></textarea>
+          </label>
+          <div id="formErrors" class="form-errors"></div>
+          <div class="form-actions">
+            <button class="ghost-btn" type="button" id="cancelBookForm">Cancel</button>
+            <button class="primary-btn" type="submit">Save Book</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+  </body>
+</html>
