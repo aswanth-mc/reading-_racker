@@ -102,12 +102,14 @@ export function validateBook(book) {
 }
 
 export function saveBook(state, payload, editingId) {
+  const { customGenre, ...restPayload } = payload;
+  const resolvedGenre = payload.genre === 'other' ? (customGenre?.trim() || 'Other') : (payload.genre || '').trim();
   const trimmed = {
-    ...payload,
-    title: payload.title.trim(),
-    author: payload.author.trim(),
-    genre: payload.genre.trim(),
-    notes: payload.notes.trim(),
+    ...restPayload,
+    title: payload.title?.trim() || '',
+    author: payload.author?.trim() || '',
+    genre: resolvedGenre,
+    notes: payload.notes?.trim() || '',
     coverImage: payload.coverImage?.trim() || '',
     totalPages: Number(payload.totalPages),
     currentPage: Number(payload.currentPage),

@@ -490,6 +490,18 @@ textarea {
   gap: 12px;
 }
 
+.genre-field {
+  gap: 8px;
+}
+
+.custom-genre-input {
+  display: none;
+}
+
+.custom-genre-input.is-visible {
+  display: block;
+}
+
 .checkbox-row {
   flex-direction: row;
   align-items: center;

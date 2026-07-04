@@ -26,6 +26,16 @@ const formErrors = document.getElementById('formErrors');
 const formTitle = document.getElementById('formTitle');
 const editingBookId = document.getElementById('editingBookId');
 const bookModalContent = document.getElementById('bookModalContent');
+const genreSelect = document.getElementById('genre');
+const customGenreInput = document.getElementById('customGenre');
+
+const genreGroups = [
+  { label: 'Fiction', options: ['Novel', 'Short Story', 'Fantasy', 'Science Fiction', 'Mystery', 'Thriller', 'Horror', 'Romance', 'Historical Fiction', 'Adventure', 'Young Adult', "Children's"] },
+  { label: 'Non-Fiction', options: ['Biography', 'Autobiography', 'Memoir', 'History', 'Science', 'Technology', 'Business', 'Economics', 'Finance', 'Politics', 'Psychology', 'Philosophy', 'Religion', 'Health & Fitness', 'Self-Help', 'Productivity', 'Personal Development', 'Education', 'Parenting', 'Travel', 'Cooking', 'Art & Design'] },
+  { label: 'Academic & Technical', options: ['Programming', 'Computer Science', 'Mathematics', 'Engineering', 'Data Science', 'Artificial Intelligence', 'Cybersecurity'] },
+  { label: 'Comics & Others', options: ['Manga', 'Comics', 'Graphic Novel', 'Poetry', 'Essays', 'Magazine'] }
+];
+const predefinedGenres = genreGroups.flatMap((group) => group.options);
 
 let activeBookId = null;
 
@@ -60,6 +70,66 @@ function populateGenreFilter() {
   genreFilter.innerHTML = '<option value="all">All</option>' + genres.map((genre) => `<option value="${genre}">${genre}</option>`).join('');
 }
 
+function populateGenreField(selectedGenre = '') {
+  genreSelect.innerHTML = '';
+
+  const placeholderOption = document.createElement('option');
+  placeholderOption.value = '';
+  placeholderOption.textContent = 'Select a genre';
+  genreSelect.appendChild(placeholderOption);
+
+  genreGroups.forEach(({ label, options }) => {
+    const group = document.createElement('optgroup');
+    group.label = label;
+    options.forEach((optionValue) => {
+      const option = document.createElement('option');
+      option.value = optionValue;
+      option.textContent = optionValue;
+      group.appendChild(option);
+    });
+    genreSelect.appendChild(group);
+  });
+
+  const otherOption = document.createElement('option');
+  otherOption.value = 'other';
+  otherOption.textContent = 'Other';
+  genreSelect.appendChild(otherOption);
+
+  const normalizedGenre = (selectedGenre || '').trim();
+  if (!normalizedGenre) {
+    genreSelect.value = '';
+    customGenreInput.value = '';
+    customGenreInput.classList.remove('is-visible');
+    return;
+  }
+
+  if (predefinedGenres.includes(normalizedGenre)) {
+    genreSelect.value = normalizedGenre;
+    customGenreInput.value = '';
+    customGenreInput.classList.remove('is-visible');
+    return;
+  }
+
+  if (normalizedGenre === 'Other') {
+    genreSelect.value = 'other';
+    customGenreInput.value = '';
+    customGenreInput.classList.add('is-visible');
+    return;
+  }
+
+  genreSelect.value = 'other';
+  customGenreInput.value = normalizedGenre;
+  customGenreInput.classList.add('is-visible');
+}
+
+function toggleCustomGenreInput() {
+  const shouldShow = genreSelect.value === 'other';
+  customGenreInput.classList.toggle('is-visible', shouldShow);
+  if (!shouldShow) {
+    customGenreInput.value = '';
+  }
+}
+
 function openEditModal(bookId) {
   const book = state.books.find((item) => item.id === bookId);
   if (!book) return;
@@ -68,7 +138,7 @@ function openEditModal(bookId) {
   editingBookId.value = book.id;
   document.getElementById('title').value = book.title || '';
   document.getElementById('author').value = book.author || '';
-  document.getElementById('genre').value = book.genre || '';
+  populateGenreField(book.genre || '');
   document.getElementById('coverImage').value = book.coverImage || '';
   document.getElementById('totalPages').value = book.totalPages || '';
   document.getElementById('currentPage').value = book.currentPage || '';
@@ -98,6 +168,7 @@ function closeFormModal() {
   modal.classList.add('hidden');
   modal.setAttribute('aria-hidden', 'true');
   form.reset();
+  populateGenreField('');
   editingBookId.value = '';
   formTitle.textContent = 'Add New Book';
   formErrors.innerHTML = '';
@@ -123,6 +194,7 @@ form.addEventListener('submit', (event) => {
 
 document.getElementById('addBookBtn').addEventListener('click', () => {
   form.reset();
+  populateGenreField('');
   editingBookId.value = '';
   formTitle.textContent = 'Add New Book';
   formErrors.innerHTML = '';
@@ -144,6 +216,8 @@ document.getElementById('bookModal').addEventListener('click', (event) => {
 document.getElementById('bookFormModal').addEventListener('click', (event) => {
   if (event.target.id === 'bookFormModal') closeFormModal();
 });
+
+genreSelect.addEventListener('change', toggleCustomGenreInput);
 
 themeToggle.addEventListener('click', () => {
   state.preferences.theme = state.preferences.theme === 'dark' ? 'light' : 'dark';
