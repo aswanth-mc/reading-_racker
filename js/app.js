@@ -299,7 +299,9 @@ function renderFilteredBooks() {
     }
   });
 
-  renderBooks(filtered, booksList, {
+  const visibleBooks = filtered.slice(0, 5);
+
+  renderBooks(visibleBooks, booksList, {
     onEdit: openEditModal,
     onDelete: (bookId) => {
       if (window.confirm('Remove this book from your library?')) {
