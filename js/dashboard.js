@@ -181,5 +181,6 @@ function buildChartData(state) {
 
 });
 
+
   return { months, booksByMonth, pagesByMonth, genreDistribution, statusDistribution };
 }
