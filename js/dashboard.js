@@ -164,9 +164,22 @@ function buildChartData(state) {
   }
 
   state.books.forEach((book) => {
-    if (book.genre) genreDistribution[book.genre] = (genreDistribution[book.genre] || 0) + 1;
-    statusDistribution[book.status] = (statusDistribution[book.status] || 0) + 1;
-  });
+
+  // Keep the status chart counting every book
+  statusDistribution[book.status] =
+    (statusDistribution[book.status] || 0) + 1;
+
+  // Only count genres for Currently Reading and Finished books
+  if (
+    (book.status === "currently-reading" ||
+     book.status === "finished") &&
+    book.genre
+  ) {
+    genreDistribution[book.genre] =
+      (genreDistribution[book.genre] || 0) + 1;
+  }
+
+});
 
   return { months, booksByMonth, pagesByMonth, genreDistribution, statusDistribution };
 }
