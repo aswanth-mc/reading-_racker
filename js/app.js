@@ -299,7 +299,17 @@ function renderFilteredBooks() {
     }
   });
 
-  const visibleBooks = filtered.slice(0, 5);
+  // If no search or filters are active, apply dashboard-specific
+  // selection logic: prefer currently-reading, then want-to-read,
+  // exclude finished/dropped and limit to 5 items.
+  let visibleBooks;
+  if (!search && status === 'all' && genre === 'all' && favorite === 'all') {
+    const currentBooks = state.books.filter((book) => book.status === 'currently-reading');
+    const wantBooks = state.books.filter((book) => book.status === 'want-to-read');
+    visibleBooks = [...currentBooks, ...wantBooks].slice(0, 5);
+  } else {
+    visibleBooks = filtered.slice(0, 5);
+  }
 
   renderBooks(visibleBooks, booksList, {
     onEdit: openEditModal,
